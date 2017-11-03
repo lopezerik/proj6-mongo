@@ -80,17 +80,38 @@ def index():
       app.logger.debug("Memo: " + str(memo))
   return flask.render_template('index.html')
 
+@app.route("/add_memo")
+def add_memo():
+    return flask.render_template('add_memo.html')
 
-@app.route("/jstest")
-def jstest():
-    return flask.render_template('jstest.html')
-
-# We don't have an interface for creating memos yet
-# @app.route("/create")
-# def create():
-#     app.logger.debug("Create")
-#     return flask.render_template('create.html')
-
+@app.route("/_save_memo")
+def _save_memo():
+    # Retrieve info from page and add to database
+    text = flask.request.args.get("text")
+    date = flask.request.args.get("dat")
+    print("save memo date = " + date)
+    memo = {"type": "dated_memo",
+            "date": date,
+            "text": text
+            }
+    collection.insert(memo)
+    # Faux return variable
+    status = {"stat": "true"}
+    return flask.jsonify(result=status)
+    
+@app.route("/_del_memo")
+def _del_memo():
+    # Delete memo with this info from db
+    text = flask.request.args.get("text")
+    date = flask.request.args.get("dat")
+    memo = {"type": "dated_memo",
+            "date": date,
+            "text": text
+            }
+    collection.remove(memo)
+    # Faux return variable
+    status = {"stat": "true"}
+    return flask.jsonify(result=status)
 
 @app.errorhandler(404)
 def page_not_found(error):
@@ -104,7 +125,8 @@ def page_not_found(error):
 # Functions used within the templates
 #
 #################
-
+def test_yo():
+    print("")
 
 @app.template_filter( 'humanize' )
 def humanize_arrow_date( date ):
@@ -115,15 +137,28 @@ def humanize_arrow_date( date ):
     need to catch 'today' as a special case. 
     """
     try:
-        then = arrow.get(date).to('local')
-        now = arrow.utcnow().to('local')
-        if then.date() == now.date():
+        then = arrow.get(date).to('local').to('utc')
+        rnow = arrow.utcnow().to('local')
+        # get rid of hours, messes with calculations
+        rnow = rnow.replace(hour=0, minute=0, seconds=0)
+        if then.date() == rnow.date():
             human = "Today"
         else: 
-            human = then.humanize(now)
+            human = then.humanize(rnow)
+            humanParts = human.split(" ")
             if human == "in a day":
                 human = "Tomorrow"
+            elif human == "a day ago":
+                human = "Yesterday"
+            # 'hours' means the date is tomorrow
+            elif "hours" in human:
+                human = "Tomorrow"
+            # if format is of type "in x days", calculate weeks if possible
+            elif len(humanParts[1]) < 3:
+                if ((int(humanParts[1]) % 7) == 0):
+                    human = "in {} week(s)".format(int(int(humanParts[1]) / 7))
     except: 
+        print("Excepted")
         human = date
     return human
 
@@ -139,7 +174,8 @@ def get_memos():
     can be inserted directly in the 'session' object.
     """
     records = [ ]
-    for record in collection.find( { "type": "dated_memo" } ):
+    # added .sort to get items in order
+    for record in collection.find( { "type": "dated_memo" } ).sort([("date", -1)]):
         record['date'] = arrow.get(record['date']).isoformat()
         del record['_id']
         records.append(record)
