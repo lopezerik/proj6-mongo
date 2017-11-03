@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<title>Memos</title>
+  <meta charset='utf-8'>
+  <!-- 'viewport' is used by bootstrap to respond to device size -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Javascript:  JQuery from a content distribution network (CDN) -->
+  <script
+     src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js">
+  </script>
+
+  <!-- Bootstrap includes javascript and css  (must follow jquery) -->
+  <link rel="stylesheet"
+   href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+   <script
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js">
+</script>
+
+   <!-- Our own style sheet -->
+   <link rel="stylesheet" href="/static/css/memos.css" />
+
+
+</head>
+<body>
+<div class="container">
+
+<h1>Add Memo</h1>
+<div class="date_time">
+  <label class="date_label">&#x1F4C6;</label>
+  <input type=date name="memo_date" id="memo_date" value="2017-01-01" class="memo_date" />
+</div>
+<p>&nbsp;</p>
+<div class="memo">
+  <textarea rows="6" cols="50" name="memo_text">
+  </textarea>
+</div>
+<div>
+  <button onclick="saveMemo()"> Save </button>
+  <button onclick="cancelMemo()"> Cancel </button>
+</div>
+</div> <!-- container -->
+</body>
+<script>
+  // Send memo to flask_main.py
+  function saveMemo(){
+    var memo_text = $('textarea[name="memo_text"]').val();
+    var memo_date = ($('input[name="memo_date"]').val());
+    console.log(memo_date);
+    $.getJSON("/_save_memo", {text: memo_text, dat: memo_date},
+      function(data){
+          // Wait until flask is done, then redirect
+          window.location.replace("/index");
+      }
+    );
+  }
+  
+  // Cancel and return to main page, dont save memo
+  function cancelMemo(){
+    window.location.replace("/index");
+  }
+</script>
+</html>

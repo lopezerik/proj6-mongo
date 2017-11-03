@@ -2,3 +2,4 @@ Flask
 arrow
 gunicorn
 pymongo
+nose

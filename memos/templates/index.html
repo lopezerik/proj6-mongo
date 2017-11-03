@@ -37,16 +37,23 @@
 {% endwith %}
 
 <h1>Memos</h1>
+<button onclick="addMemo()">Add New Memo!</button>
+
+<p>&nbsp;</p>
 
 {% if g.memos %}
     {% for memo in g.memos %}
   <div class="memo">
-  <div class="row">
-  <div class="col-md-2">
+  <div class="row" id="{{ memo.text }}">
+  <div class="col-md-2" >
+    <input type="hidden" id="{{ memo.text }}_date" value="{{ memo.date }}"> 
     {{ memo.date | humanize }}
   </div>
-  <div class="col-md-10">
-    {{ memo.text }}
+  <div class="col-md-5" >
+    <label class="col-md-10" id="{{ memo.text }}" >{{ memo.text }}</label>
+    <button class="col-md-2" name="del" id="{{ memo.text }}" onClick="delMemo(this.id)"> Delete </button>
+
+    <p>&nbsp;</p>
   </div>
   </div> <!-- row -->
   </div> <!-- memo -->
@@ -59,4 +66,23 @@
 
 </div> <!-- container -->
 </body>
+<script>
+  function addMemo(){
+    // Redirect to add_memo.html
+    window.location.replace("/add_memo");
+  }
+  // click_id is the same as the id of the row, so we can delete it easily
+  function delMemo(click_id){
+      // Get date and memo text and send to flask_main.py
+      var dat = document.getElementById(click_id + "_date");
+      var datto = (dat.value);
+      console.log(datto);
+      var parts = datto.split('T');
+      console.log(parts);
+      document.getElementById(click_id).remove();
+      $.getJSON("/_del_memo", {text: click_id, dat: parts[0]});
+  }
+  
+
+</script>
 </html>
