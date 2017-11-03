@@ -125,8 +125,6 @@ def page_not_found(error):
 # Functions used within the templates
 #
 #################
-def test_yo():
-    print("")
 
 @app.template_filter( 'humanize' )
 def humanize_arrow_date( date ):
@@ -158,7 +156,6 @@ def humanize_arrow_date( date ):
                 if ((int(humanParts[1]) % 7) == 0):
                     human = "in {} week(s)".format(int(int(humanParts[1]) / 7))
     except: 
-        print("Excepted")
         human = date
     return human
 
